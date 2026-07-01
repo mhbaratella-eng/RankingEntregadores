@@ -1,8 +1,15 @@
 import streamlit as st
 import pandas as pd
+import unicodedata
 
 # 1. Configuração da página
 st.set_page_config(page_title="Ranking de Entregadores", page_icon="🛵", layout="centered")
+
+# Função auxiliar para remover acentos de um texto
+def remover_acentos(texto):
+    if not isinstance(texto, str):
+        return texto
+    return "".join(c for c in unicodedata.normalize('NFD', texto) if unicodedata.category(c) != 'Mn')
 
 # 2. Função para carregar e padronizar os dados da planilha
 @st.cache_data
@@ -18,8 +25,10 @@ def carregar_dados():
         st.error(f"Erro ao ler o arquivo: {e}")
         st.stop()
     
-    # Remove espaços invisíveis e transforma todos os nomes de colunas em minúsculo
+    # Limpa espaços invisíveis, deixa tudo minúsculo e REMOVE ACENTOS dos títulos das colunas
+    # Exemplo: 'Posição' vira 'posicao', 'Entregador' vira 'entregador'
     df.columns = df.columns.str.strip().str.lower()
+    df.columns = [remover_acentos(col) for col in df.columns]
     
     return df
 
@@ -49,9 +58,9 @@ if cpf_digitado:
         resultado = df_ranking[df_ranking['cpf_limpo'] == cpf_limpo]
         
         if not resultado.empty:
-            # Puxa os dados usando os nomes das colunas já padronizados em minúsculo
+            # Puxa os dados usando as colunas sem acento por segurança ('entregador' e 'posicao')
             nome = resultado.iloc[0]['entregador']
-            posicao = resultado.iloc[0]['posição']
+            posicao = resultado.iloc[0]['posicao']
             
             # Mensagem de sucesso para o entregador
             st.success(f"Olá, **{nome}**! Seus dados foram localizados.")
@@ -63,7 +72,7 @@ if cpf_digitado:
             st.warning("CPF não encontrado. Certifique-se de que digitou corretamente.")
             
     else:
-        st.error("Erro técnico: Não encontramos a coluna 'cpf' na sua planilha. Verifique as colunas do arquivo ranking.csv.")
+        st.error("Erro técnico: Não encontramos a coluna 'cpf' na sua planilha. Verifique o arquivo ranking.csv.")
 
 # Nota de rodapé sobre privacidade dos dados
 st.caption("🔒 Seus dados estão seguros. Este sistema não mostra sua posição para outros entregadores.")
