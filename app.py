@@ -1,18 +1,24 @@
 import streamlit as st
 import pandas as pd
 
-# 1. Configuração da página (deve ser o primeiro comando)
+# 1. Configuração da página
 st.set_page_config(page_title="Ranking de Entregadores", page_icon="🛵", layout="centered")
 
 # 2. Função para carregar e padronizar os dados da planilha
 @st.cache_data
 def carregar_dados():
-    # Carrega o CSV mapeando tudo inicialmente como texto
-    df = pd.read_csv("ranking.csv", dtype=str)
+    try:
+        # Tenta ler primeiro com separador padrão (vírgula)
+        df = pd.read_csv("ranking.csv", dtype=str)
+        
+        # Se o Excel salvou tudo junto em uma coluna só, tenta ler com ponto e vírgula
+        if len(df.columns) <= 1:
+            df = pd.read_csv("ranking.csv", sep=";", dtype=str)
+    except Exception as e:
+        st.error(f"Erro ao ler o arquivo: {e}")
+        st.stop()
     
-    # PADRONIZAÇÃO DE SEGURANÇA:
-    # Remove espaços invisíveis e transforma todos os nomes de colunas em minúsculo.
-    # Assim, 'CPF', 'cpf ', 'Cpf' viram apenas 'cpf'.
+    # Remove espaços invisíveis e transforma todos os nomes de colunas em minúsculo
     df.columns = df.columns.str.strip().str.lower()
     
     return df
@@ -57,7 +63,7 @@ if cpf_digitado:
             st.warning("CPF não encontrado. Certifique-se de que digitou corretamente.")
             
     else:
-        st.error("Erro técnico: Não encontramos a coluna 'cpf' na sua planilha. Verifique o arquivo ranking.csv.")
+        st.error("Erro técnico: Não encontramos a coluna 'cpf' na sua planilha. Verifique as colunas do arquivo ranking.csv.")
 
 # Nota de rodapé sobre privacidade dos dados
 st.caption("🔒 Seus dados estão seguros. Este sistema não mostra sua posição para outros entregadores.")
