@@ -16,10 +16,7 @@ try:
 except Exception as e:
     st.error(e)
 
-cpf = st.text_input(
-    "Digite seu CPF",
-    type="password"
-)
+cpf = st.text_input("Digite seu CPF")
 
 if st.button("Consultar"):
 
