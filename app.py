@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 st.set_page_config(
-    page_title="Ranking OL",
+    page_title="Ranking EntreGÔ Semanal",
     page_icon="🏆"
 )
 
