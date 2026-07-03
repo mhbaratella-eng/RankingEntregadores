@@ -6,7 +6,7 @@ st.set_page_config(
     page_icon="🏆"
 )
 
-st.title("🏆 Ranking da OL")
+st.title("🏆 Ranking EntreGÔ Semanal")
 
 try:
     df = pd.read_excel("ranking.xlsx")
