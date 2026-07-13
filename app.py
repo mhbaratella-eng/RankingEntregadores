@@ -26,15 +26,12 @@ def carregar_dados():
         dtype=str
     )
 
-    # Remove espaços dos nomes das colunas
     df.columns = df.columns.str.strip()
 
-    # Remove espaços dos dados
     for c in df.columns:
         df[c] = df[c].astype(str).str.strip()
 
 
-    # Corrige CPF
     df["cpf"] = (
         df["cpf"]
         .str.replace(r"\D", "", regex=True)
@@ -42,14 +39,12 @@ def carregar_dados():
     )
 
 
-    # Corrige rotas
     df["Rotas Completas"] = pd.to_numeric(
         df["Rotas Completas"],
         errors="coerce"
     ).fillna(0)
 
 
-    # Ranking geral
     df = (
         df.sort_values(
             "Rotas Completas",
@@ -61,7 +56,6 @@ def carregar_dados():
     df["Posição Geral"] = range(1, len(df) + 1)
 
 
-    # Ranking elegíveis
     if "Status" in df.columns:
 
         eleg = df[
@@ -135,26 +129,33 @@ if st.button("Consultar"):
         )
 
 
-        c1, c2 = st.columns(2)
-
-with c1:
-    pos = e["Posição Elegíveis"]
-
-    st.metric(
-        "🥇 Ranking Elegíveis",
-        "-"
-        if pd.isna(pos)
-        else int(pos)
-    )
-
-with c2:
-    st.metric(
-        "🏆 Ranking Geral",
-        int(e["Posição Geral"])
-    )
-
+        # Ranking (Elegíveis agora aparece à esquerda)
 
         c1, c2 = st.columns(2)
+
+        with c1:
+
+            pos = e["Posição Elegíveis"]
+
+            st.metric(
+                "🥇 Ranking Elegíveis",
+                "-"
+                if pd.isna(pos)
+                else int(pos)
+            )
+
+
+        with c2:
+
+            st.metric(
+                "🏆 Ranking Geral",
+                int(e["Posição Geral"])
+            )
+
+
+
+        c1, c2 = st.columns(2)
+
 
         with c1:
 
@@ -172,17 +173,20 @@ with c2:
             )
 
 
+
         # Status / elegibilidade
 
         if "Status" in df.columns:
 
             status = str(e["Status"])
 
+
             obs = re.sub(
                 r"^[^A-Za-zÀ-ÿ0-9?]+",
                 "",
                 status
             )
+
 
             obs = (
                 obs
@@ -216,6 +220,7 @@ with c2:
             )
 
             st.info(obs)
+
 
         else:
 
