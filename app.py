@@ -61,8 +61,22 @@ if st.button("Consultar"):
         with c2:
             st.metric("📈 Taxa de Aceite", e["% Taxa de Aceite"])
 
-        status = str(e["Status"])
+        status = str(entregador["Status"])
+
+# Remove os "??" e espaços extras
+status_limpo = (
+    status
+    .replace("??", "")
+    .replace("?", "")
+    .strip()
+)
         if "eleg" in status.lower():
-            st.success(status)
-        else:
-            st.error(status)
+
+    st.success("✅ Você está elegível para participar da campanha.")
+
+else:
+
+    st.error("❌ Você não está elegível.")
+
+st.subheader("Observação")
+st.info(status_limpo)
