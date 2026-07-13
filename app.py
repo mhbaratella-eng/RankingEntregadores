@@ -123,7 +123,7 @@ def carregar_dados():
 df = carregar_dados()
 
 
-st.title("🏆 Ranking de Entregadores")
+st.title("🚀 Ranking Meta do foguete")
 
 
 cpf = st.text_input(
