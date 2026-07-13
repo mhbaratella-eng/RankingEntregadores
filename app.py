@@ -1,116 +1,192 @@
 import streamlit as st
 import pandas as pd
 
-# ==========================
-# Configuração da página
-# ==========================
+# ============================================
+# CONFIGURAÇÃO DA PÁGINA
+# ============================================
+
 st.set_page_config(
-    page_title="Ranking EntreGÔ Semanal",
+    page_title="Ranking de Entregadores",
     page_icon="🏆",
     layout="centered"
 )
 
-# ==========================
-# Cabeçalho
-# ==========================
+# ============================================
+# CARREGA O CSV
+# ============================================
 
-try:
-    st.image("logo.png", width=220)
-except:
-    pass
+@st.cache_data
+def carregar_dados():
 
-st.title("🏆 Consulta de Ranking Semanal")
-st.write("Consulte sua posição no ranking da sua cidade.")
+    try:
+        df = pd.read_csv(
+            "ranking.csv",
+            sep=";",
+            encoding="utf-8-sig",
+            dtype=str
+        )
+    except:
+        df = pd.read_csv(
+            "ranking.csv",
+            encoding="utf-8-sig",
+            dtype=str
+        )
 
-st.divider()
+    # Remove espaços dos nomes das colunas
+    df.columns = df.columns.str.strip()
 
-# ==========================
-# Escolha da filial
-# ==========================
+    # Remove espaços dos dados
+    df = df.apply(lambda coluna: coluna.str.strip() if coluna.dtype == "object" else coluna)
 
-filial = st.radio(
-    "Escolha sua cidade",
-    ["São Paulo", "Goiânia", "Brasília"],
-    horizontal=True
-)
+    # CPF apenas números
+    df["cpf"] = df["cpf"].str.replace(r"\D", "", regex=True)
 
-arquivos = {
-    "São Paulo": "ranking-sp.xlsx",
-    "Goiânia": "ranking-goiania.xlsx",
-    "Brasília": "ranking-brasilia.xlsx"
-}
-
-# ==========================
-# Carrega a planilha
-# ==========================
-
-try:
-    df = pd.read_excel(arquivos[filial])
-
-    df.columns = df.columns.str.strip().str.upper()
-
-    df["CPF"] = (
-        df["CPF"]
-        .astype(str)
-        .str.replace(r"\D", "", regex=True)
+    # Converte rotas para número
+    df["Rotas Completas"] = (
+        df["Rotas Completas"]
+        .str.replace(".", "", regex=False)
+        .str.replace(",", ".", regex=False)
+        .astype(float)
     )
 
-except Exception as e:
-    st.error(f"Erro ao carregar a planilha: {e}")
-    st.stop()
+    # Ordena pelo maior número de rotas
+    df = df.sort_values(
+        by="Rotas Completas",
+        ascending=False
+    ).reset_index(drop=True)
 
-# ==========================
-# Consulta
-# ==========================
+    # Cria posição geral
+    df["Posição Geral"] = df.index + 1
+
+    # Apenas elegíveis
+    elegiveis = (
+        df[
+            df["Status"].str.lower() == "elegível".lower()
+        ]
+        .copy()
+        .reset_index(drop=True)
+    )
+
+    # Cria posição dos elegíveis
+    elegiveis["Posição Elegíveis"] = elegiveis.index + 1
+
+    # Junta novamente
+    df = df.merge(
+        elegiveis[["cpf", "Posição Elegíveis"]],
+        on="cpf",
+        how="left"
+    )
+
+    return df
+
+df = carregar_dados()
+
+# ============================================
+# CABEÇALHO
+# ============================================
+
+st.title("🏆 Ranking de Entregadores")
+
+st.write("Digite seu CPF para consultar sua posição no ranking.")
 
 cpf = st.text_input(
     "CPF",
     placeholder="Digite apenas os números"
 )
 
-cpf = cpf.replace(".", "").replace("-", "").strip()
+# ============================================
+# CONSULTA
+# ============================================
 
-st.write("")
+if st.button("Consultar"):
 
-if st.button("🔍 Consultar posição", use_container_width=True):
+    cpf = "".join(filter(str.isdigit, cpf))
 
-    resultado = df[df["CPF"] == cpf]
+    resultado = df[df["cpf"] == cpf]
 
     if resultado.empty:
-        st.error("CPF não encontrado nesta filial.")
+
+        st.error("CPF não encontrado.")
 
     else:
 
-        nome = resultado.iloc[0]["NOME"]
-        posicao = resultado.iloc[0]["POSIÇÃO"]
+        entregador = resultado.iloc[0]
 
-        st.success(f"Bem-vindo(a), **{nome}**!")
+        st.success("Consulta realizada com sucesso!")
+
+        st.markdown(f"## {entregador['Entregador']}")
 
         st.divider()
 
         col1, col2 = st.columns(2)
 
         with col1:
+
             st.metric(
-                "🏆 Colocação",
-                f"{posicao}º"
+                "🏆 Posição Geral",
+                int(entregador["Posição Geral"])
             )
 
         with col2:
+
+            if pd.notna(entregador["Posição Elegíveis"]):
+
+                st.metric(
+                    "✅ Ranking Elegíveis",
+                    int(entregador["Posição Elegíveis"])
+                )
+
+            else:
+
+                st.metric(
+                    "✅ Ranking Elegíveis",
+                    "-"
+                )
+
+        st.divider()
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+
             st.metric(
-                "📍 Filial",
-                filial
+                "🚴 Rotas",
+                int(entregador["Rotas Completas"])
+            )
+
+        with col2:
+
+            st.metric(
+                "📈 Taxa de Aceite",
+                entregador["% Taxa de Aceite"]
             )
 
         st.divider()
 
-        if posicao == 1:
-            st.info("🥇 Parabéns! Você é o líder do ranking!")
+        status = entregador["Status"]
 
-        elif posicao <= 10:
-            st.info("🔥 Você está entre os 10 primeiros!")
+        if status.lower() == "elegível":
 
-        elif posicao <= 20:
-            st.info("👏 Continue assim! Você está no Top 20!")
+            st.success("🎉 Você está elegível para a campanha!")
 
-        st.balloons()
+        else:
+
+            st.error("❌ Você ainda não está elegível.")
+
+        st.subheader("Observação")
+
+        st.info(entregador["Observação"])
+
+        st.divider()
+
+        total = len(df)
+
+        percentual = round(
+            (1 - ((entregador["Posição Geral"] - 1) / total)) * 100
+        )
+
+        st.write(
+            f"Você está entre os **{percentual}%** primeiros colocados do ranking geral."
+        )
+
+        st.progress(percentual / 100)
