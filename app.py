@@ -1,76 +1,66 @@
 import streamlit as st
 import pandas as pd
 
-# ============================================
-# CONFIGURAÇÃO DA PÁGINA
-# ============================================
-
 st.set_page_config(
     page_title="Ranking de Entregadores",
     page_icon="🏆",
     layout="centered"
 )
 
-# ============================================
-# CARREGA O CSV
-# ============================================
+# ===============================
+# CARREGAR DADOS
+# ===============================
 
 @st.cache_data
 def carregar_dados():
 
-    try:
-        df = pd.read_csv(
-            "ranking.csv",
-            sep=";",
-            encoding="utf-8-sig",
-            dtype=str
-        )
-    except:
-        df = pd.read_csv(
-            "ranking.csv",
-            encoding="utf-8-sig",
-            dtype=str
-        )
+    df = pd.read_csv(
+        "ranking.csv",
+        sep=";",
+        encoding="cp1252",
+        dtype=str
+    )
 
     # Remove espaços dos nomes das colunas
     df.columns = df.columns.str.strip()
 
     # Remove espaços dos dados
-    df = df.apply(lambda coluna: coluna.str.strip() if coluna.dtype == "object" else coluna)
+    for coluna in df.columns:
+        if df[coluna].dtype == "object":
+            df[coluna] = df[coluna].str.strip()
 
     # CPF apenas números
     df["cpf"] = df["cpf"].str.replace(r"\D", "", regex=True)
 
-    # Converte rotas para número
-    df["Rotas Completas"] = (
-        df["Rotas Completas"]
-        .str.replace(".", "", regex=False)
-        .str.replace(",", ".", regex=False)
-        .astype(float)
-    )
+    # Rotas em número
+    df["Rotas Completas"] = pd.to_numeric(
+        df["Rotas Completas"],
+        errors="coerce"
+    ).fillna(0)
 
-    # Ordena pelo maior número de rotas
+    # Ordena por rotas
     df = df.sort_values(
         by="Rotas Completas",
         ascending=False
     ).reset_index(drop=True)
 
-    # Cria posição geral
-    df["Posição Geral"] = df.index + 1
+    # Ranking Geral
+    df["Posição Geral"] = range(1, len(df) + 1)
 
-    # Apenas elegíveis
-    elegiveis = (
-        df[
-            df["Status"].str.lower() == "elegível".lower()
-        ]
-        .copy()
-        .reset_index(drop=True)
+    # Ranking somente elegíveis
+    elegiveis = df[
+        df["Status"].str.contains(
+            "elegível",
+            case=False,
+            na=False
+        )
+    ].copy()
+
+    elegiveis["Posição Elegíveis"] = range(
+        1,
+        len(elegiveis) + 1
     )
 
-    # Cria posição dos elegíveis
-    elegiveis["Posição Elegíveis"] = elegiveis.index + 1
-
-    # Junta novamente
     df = df.merge(
         elegiveis[["cpf", "Posição Elegíveis"]],
         on="cpf",
@@ -79,24 +69,27 @@ def carregar_dados():
 
     return df
 
+
 df = carregar_dados()
 
-# ============================================
-# CABEÇALHO
-# ============================================
+# ===============================
+# TÍTULO
+# ===============================
 
 st.title("🏆 Ranking de Entregadores")
 
-st.write("Digite seu CPF para consultar sua posição no ranking.")
+st.write(
+    "Digite seu CPF para consultar sua posição."
+)
 
 cpf = st.text_input(
     "CPF",
-    placeholder="Digite apenas os números"
+    placeholder="Digite somente os números"
 )
 
-# ============================================
+# ===============================
 # CONSULTA
-# ============================================
+# ===============================
 
 if st.button("Consultar"):
 
@@ -114,7 +107,7 @@ if st.button("Consultar"):
 
         st.success("Consulta realizada com sucesso!")
 
-        st.markdown(f"## {entregador['Entregador']}")
+        st.subheader(entregador["Entregador"])
 
         st.divider()
 
@@ -123,7 +116,7 @@ if st.button("Consultar"):
         with col1:
 
             st.metric(
-                "🏆 Posição Geral",
+                "🏆 Ranking Geral",
                 int(entregador["Posição Geral"])
             )
 
@@ -165,19 +158,17 @@ if st.button("Consultar"):
 
         status = entregador["Status"]
 
-        if status.lower() == "elegível":
+        if "elegível" in status.lower():
 
-            st.success("🎉 Você está elegível para a campanha!")
+            st.success("🎉 Você está elegível para participar da campanha.")
 
         else:
 
             st.error("❌ Você ainda não está elegível.")
 
-        st.subheader("Observação")
+        st.subheader("Status")
 
-        st.info(entregador["Observação"])
-
-        st.divider()
+        st.info(status)
 
         total = len(df)
 
@@ -185,8 +176,10 @@ if st.button("Consultar"):
             (1 - ((entregador["Posição Geral"] - 1) / total)) * 100
         )
 
+        st.divider()
+
         st.write(
-            f"Você está entre os **{percentual}%** primeiros colocados do ranking geral."
+            f"Você está entre os **{percentual}%** melhores colocados do ranking geral."
         )
 
         st.progress(percentual / 100)
