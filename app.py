@@ -137,22 +137,21 @@ if st.button("Consultar"):
 
         c1, c2 = st.columns(2)
 
-        with c1:
-            st.metric(
-                "🏆 Ranking Geral",
-                int(e["Posição Geral"])
-            )
+with c1:
+    pos = e["Posição Elegíveis"]
 
-        with c2:
+    st.metric(
+        "🥇 Ranking Elegíveis",
+        "-"
+        if pd.isna(pos)
+        else int(pos)
+    )
 
-            pos = e["Posição Elegíveis"]
-
-            st.metric(
-                "🥇 Ranking Elegíveis",
-                "-"
-                if pd.isna(pos)
-                else int(pos)
-            )
+with c2:
+    st.metric(
+        "🏆 Ranking Geral",
+        int(e["Posição Geral"])
+    )
 
 
         c1, c2 = st.columns(2)
