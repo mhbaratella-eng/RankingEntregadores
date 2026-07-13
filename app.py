@@ -291,6 +291,6 @@ if st.button("Consultar"):
             )
             # Banner da promoção
 try:
-    st.image("banner.png", use_container_width=True)
+    st.image("banner.jpg", use_container_width=True)
 except Exception:
     pass
