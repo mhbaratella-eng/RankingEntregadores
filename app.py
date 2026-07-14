@@ -150,7 +150,7 @@ if st.button("Consultar"):
 
 
         st.error(
-            "CPF não encontrado."
+            "CPF não encontrado ou você ainda não fez entregas essa semana. Tente novamente"
         )
 
 
