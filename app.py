@@ -10,6 +10,18 @@ st.set_page_config(
     layout="centered"
 )
 
+# ==========================================
+# AVISO AOS ENTREGADORES
+# Deixe vazio ("") para não exibir nenhum aviso.
+# ==========================================
+
+AVISO = """
+Última atualização: 16/07/2026. Período entre 13/07 e 16/07.
+Pagamentos sempre são realizados na sexta-feira, caso não atinja os critérios até esta quarta-feira,
+o pagamento é feito na próxima sexta.
+"""
+
+
 try:
     st.image("logo.png", width=220)
 except Exception:
@@ -125,6 +137,8 @@ df = carregar_dados()
 
 st.title("🚀 Ranking Meta do foguete")
 
+if AVISO.strip():
+    st.info(AVISO)
 
 cpf = st.text_input(
     "CPF",
