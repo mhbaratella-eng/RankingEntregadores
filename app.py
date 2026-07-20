@@ -16,7 +16,7 @@ st.set_page_config(
 # ==========================================
 
 AVISO = """
-Última atualização: 18/07/2026. Período entre 13/07 a 18/07.
+Última atualização: 19/07/2026. Período entre 13/07 a 19/07. RESULTADO FINAL.
 
 Pagamentos sempre são realizados às sextas. 
 
