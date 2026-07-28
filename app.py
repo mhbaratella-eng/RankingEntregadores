@@ -16,9 +16,7 @@ st.set_page_config(
 # ==========================================
 
 AVISO = """
-Última atualização: 26/07/2026. Período entre 20/07 a 26/07. 
-
-RESULTADO FINAL, PRIMEIROS 30 COLOCADOS
+Última atualização: 27/07/2026. Período entre 27/07 a 27/07. 
 
 Pagamentos sempre são realizados às sextas. 
 
