@@ -138,7 +138,7 @@ def carregar_dados():
 df = carregar_dados()
 
 
-st.title("🚀 Ranking Meta do foguete")
+st.title("Semana Premiada💰")
 
 if AVISO.strip():
     st.info(AVISO)
