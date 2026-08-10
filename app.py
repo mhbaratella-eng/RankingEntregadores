@@ -286,12 +286,12 @@ if st.button("Consultar"):
             )
         elif tempo_online > 75:
             st.success(
-                "🎉 Você está elegível ao bônus de R$50! "
+                "🎉 Você está elegível ao bônus extra de R$50! "
                 "Seu tempo online está acima de 75%."
             )
         else:
             st.error(
-                "❌ Você não está elegível ao bônus de R$50. "
+                "❌ Você não está elegível ao bônus extra de R$50. "
                 "O tempo online precisa estar acima de 75%."
             )
 
@@ -330,7 +330,7 @@ if st.button("Consultar"):
 
 
                 st.success(
-                    "✅ Você está elegível."
+                    "✅ Você está elegível aos R$50."
                 )
 
 
