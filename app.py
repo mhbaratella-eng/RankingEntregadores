@@ -5,8 +5,8 @@ import pandas as pd
 import re
 
 st.set_page_config(
-    page_title="Ranking Meta do foguete",
-    page_icon="🚀",
+    page_title="Semana Premiada",
+    page_icon="💰",
     layout="centered"
 )
 
@@ -16,7 +16,7 @@ st.set_page_config(
 # ==========================================
 
 AVISO = """
-Última atualização: 06/08/2026. Período entre 03/08 a 06/08. 
+Última atualização: 09/08/2026. Período entre 03/08 a 09/08. Resultado final da Semana.
 
 Pagamentos sempre são realizados às sextas. 
 
