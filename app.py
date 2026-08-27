@@ -16,7 +16,7 @@ st.set_page_config(
 # ==========================================
 
 AVISO = """
-Última atualização: 24/08/2026. Período entre 24/08 a 24/08.
+Última atualização: 25/08/2026. Período entre 24/08 a 25/08.
 
 Pagamentos sempre são realizados às sextas. 
 
